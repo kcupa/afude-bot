@@ -1,53 +1,56 @@
-import os
+from flask import Flask, request
 import requests
-from flask import Flask, request, jsonify
 
 app = Flask(__name__)
 
-VERIFY_TOKEN = "afudeteam1324"  # El token que configuraste en Meta
-PAGE_ACCESS_TOKEN = "EAANlJsKDZCwYBO95Sa9DF8NkYf0zb0bfiIX6fZC6dhNogvmZBZCHyGZBI3oOgOQxcZCq9ridiFboFcSgrfJPoW1xnTvIFCBnedXrzZC17kwaIlgfBlSQ6ZBXjmVxsHEmWJFVRx8F6HJWw3KskcDKZAFlLW0ZCkPbirInai0waQZA5cv9gIDWUEM1k1DsMZBSCQy1RREci0ZCFH0L2MI9SSvUzJsMwXqMSinZCnO48ZD"
+# Token de verificación para el webhook
+VERIFY_TOKEN = 'afudeteam1324'  # Cambia esto por tu token de verificación
+ACCESS_TOKEN = 'TU_TOKEN_DE_ACCESO'  # Reemplaza esto con tu token de acceso de Facebook
 
-@app.route('/', methods=['GET'])
-def home():
-    return "El bot está funcionando."
+@app.route("/webhook", methods=["GET", "POST"])
+def webhook():
+    if request.method == "GET":
+        # Verificación del token de Facebook
+        token = request.args.get('hub.verify_token')
+        if token == VERIFY_TOKEN:
+            return request.args.get('hub.challenge'), 200
+        else:
+            return "Token de verificación inválido", 403
+    elif request.method == "POST":
+        # Manejo de mensajes entrantes
+        data = request.json
+        process_message(data)
+    return "Webhook recibido", 200
 
-@app.route('/webhook', methods=['GET'])
-def verify_webhook():
-    """Verifica el webhook con Facebook."""
-    token = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge")
-
-    if token == VERIFY_TOKEN:
-        return challenge
-    return "Token de verificación incorrecto", 403
-
-@app.route('/webhook', methods=['POST'])
-def handle_message():
-    """Recibe mensajes de Messenger y envía una respuesta."""
-    data = request.get_json()
-
-    if data.get("object") == "page":
+def process_message(data):
+    # Verifica que el mensaje sea válido
+    if "object" in data and data["object"] == "page":
         for entry in data["entry"]:
-            for messaging_event in entry["messaging"]:
-                if "message" in messaging_event:
-                    sender_id = messaging_event["sender"]["id"]
-                    message_text = messaging_event["message"]["text"]
+            messaging_events = entry.get("messaging", [])
+            for event in messaging_events:
+                sender_id = event["sender"]["id"]
+                message_text = event["message"]["text"]
+                respond_to_message(sender_id, message_text)
 
-                    send_message(sender_id, f"Recibí tu mensaje: {message_text}")
+def respond_to_message(sender_id, message_text):
+    # Lógica para generar una respuesta
+    response_text = generate_response(message_text)  # Llama a la función para generar respuesta
+    send_message(sender_id, response_text)
 
-    return "EVENT_RECEIVED", 200
+def generate_response(message_text):
+    # Aquí puedes implementar lógica para personalizar la respuesta
+    # Por ahora, devolveremos una respuesta genérica
+    return "Gracias por tu mensaje. Aquí está la información que necesitaras."
 
-def send_message(recipient_id, text):
-    """Envía un mensaje de vuelta al usuario."""
-    url = f"https://graph.facebook.com/v12.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
-    headers = {"Content-Type": "application/json"}
+def send_message(sender_id, response_text):
+    # Envía un mensaje de vuelta al usuario
+    url = f'https://graph.facebook.com/v12.0/me/messages?access_token={ACCESS_TOKEN}'
+    headers = {'Content-Type': 'application/json'}
     payload = {
-        "recipient": {"id": recipient_id},
-        "message": {"text": text}
+        'recipient': {'id': sender_id},
+        'message': {'text': response_text}
     }
+    requests.post(url, headers=headers, json=payload)
 
-    response = requests.post(url, headers=headers, json=payload)
-    return response.json()
-
-if __name__ == '__main__':
-    app.run(host="0.0.0.0", port=10000, debug=True)
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=10000)
