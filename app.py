@@ -5,7 +5,7 @@ from flask import Flask, request, jsonify
 app = Flask(__name__)
 
 VERIFY_TOKEN = "afudeteam1324"  # El token que configuraste en Meta
-PAGE_ACCESS_TOKEN = "TU_TOKEN_DE_PAGINA"
+PAGE_ACCESS_TOKEN = "EAANlJsKDZCwYBO95Sa9DF8NkYf0zb0bfiIX6fZC6dhNogvmZBZCHyGZBI3oOgOQxcZCq9ridiFboFcSgrfJPoW1xnTvIFCBnedXrzZC17kwaIlgfBlSQ6ZBXjmVxsHEmWJFVRx8F6HJWw3KskcDKZAFlLW0ZCkPbirInai0waQZA5cv9gIDWUEM1k1DsMZBSCQy1RREci0ZCFH0L2MI9SSvUzJsMwXqMSinZCnO48ZD"
 
 @app.route('/', methods=['GET'])
 def home():
