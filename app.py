@@ -24,53 +24,39 @@ def verify():
 def webhook():
     """ Manejo de mensajes entrantes """
     data = request.get_json()
+    
+    for entry in data.get("entry", []):
+        for message_event in entry.get("messaging", []):
+            sender_id = message_event["sender"]["id"]
+            
+            if "message" in message_event:
+                user_message = message_event["message"]["text"]
+                print(f"User message: {user_message}")  # Log del mensaje del usuario
+                
+                # Generar respuesta con OpenAI GPT-4
+                bot_response = get_ai_response(user_message)
+                print(f"Bot response: {bot_response}")  # Log de la respuesta del bot
 
-    if data and "entry" in data:
-        for entry in data["entry"]:
-            for message_event in entry.get("messaging", []):
-                sender_id = message_event["sender"]["id"]
-
-                if "message" in message_event:
-                    message = message_event["message"]
-                    if "text" in message:
-                        user_message = message["text"]
-
-                        # Generar respuesta con OpenAI GPT-4
-                        bot_response = get_ai_response(user_message)
-
-                        # Enviar la respuesta al usuario
-                        send_message(sender_id, bot_response)
+                # Enviar la respuesta al usuario
+                send_message(sender_id, bot_response)
 
     return "Message processed", 200
 
 def get_ai_response(user_message):
- print(f"User message: {user_message}")
-bot_response = get_ai_response(user_message)
-print(f"Bot response: {bot_response}")
-   """ Genera una respuesta usando OpenAI GPT-4 """
+    """ Genera una respuesta usando OpenAI GPT-4 """
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4",
-            messages=[
-                {"role": "system", "content": "Eres un asistente amigable de Afudé, una empresa de insumos para tatuadores."},
-                {"role": "user", "content": user_message}
-            ]
+            messages=[{"role": "system", "content": "Eres un asistente amigable de Afudé."},
+                      {"role": "user", "content": user_message}]
         )
         return response["choices"][0]["message"]["content"].strip()
-    print(f"User message: {user_message}")
-bot_response = get_ai_response(user_message)
-print(f"Bot response: {bot_response}")
-
     except Exception as e:
-        print(f"Error en get_ai_response: {e}")
+        print(f"Error in getting AI response: {e}")  # Log de error
         return "Lo siento, hubo un problema con mi respuesta. Inténtalo de nuevo."
 
 def send_message(recipient_id, message_text):
     """ Envía un mensaje al usuario a través de la API de Facebook """
-    print(f"User message: {user_message}")
-    bot_response = get_ai_response(user_message)
-    print(f"Bot response: {bot_response}")
-
     access_token = os.getenv("PAGE_ACCESS_TOKEN")
     url = f"https://graph.facebook.com/v12.0/me/messages?access_token={access_token}"
     headers = {"Content-Type": "application/json"}
@@ -78,14 +64,10 @@ def send_message(recipient_id, message_text):
         "recipient": {"id": recipient_id},
         "message": {"text": message_text}
     }
-    print(f"User message: {user_message}")
-    bot_response = get_ai_response(user_message)
-    print(f"Bot response: {bot_response}")
-
+    
     response = requests.post(url, headers=headers, json=data)
-    if response.status_code != 200:
-        print(f"Error al enviar mensaje: {response.text}")
+    print(f"Sending message to {recipient_id}: {message_text}")  # Log de envío de mensaje
+    print(f"Response from Facebook: {response.status_code}, {response.json()}")  # Log de respuesta de Facebook
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=10000, debug=True)
-
+    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 10000)), debug=True)
