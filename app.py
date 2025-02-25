@@ -44,7 +44,10 @@ def webhook():
     return "Message processed", 200
 
 def get_ai_response(user_message):
-    """ Genera una respuesta usando OpenAI GPT-4 """
+ print(f"User message: {user_message}")
+bot_response = get_ai_response(user_message)
+print(f"Bot response: {bot_response}")
+   """ Genera una respuesta usando OpenAI GPT-4 """
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4",
@@ -54,12 +57,20 @@ def get_ai_response(user_message):
             ]
         )
         return response["choices"][0]["message"]["content"].strip()
+    print(f"User message: {user_message}")
+bot_response = get_ai_response(user_message)
+print(f"Bot response: {bot_response}")
+
     except Exception as e:
         print(f"Error en get_ai_response: {e}")
         return "Lo siento, hubo un problema con mi respuesta. Inténtalo de nuevo."
 
 def send_message(recipient_id, message_text):
     """ Envía un mensaje al usuario a través de la API de Facebook """
+    print(f"User message: {user_message}")
+    bot_response = get_ai_response(user_message)
+    print(f"Bot response: {bot_response}")
+
     access_token = os.getenv("PAGE_ACCESS_TOKEN")
     url = f"https://graph.facebook.com/v12.0/me/messages?access_token={access_token}"
     headers = {"Content-Type": "application/json"}
@@ -67,6 +78,9 @@ def send_message(recipient_id, message_text):
         "recipient": {"id": recipient_id},
         "message": {"text": message_text}
     }
+    print(f"User message: {user_message}")
+    bot_response = get_ai_response(user_message)
+    print(f"Bot response: {bot_response}")
 
     response = requests.post(url, headers=headers, json=data)
     if response.status_code != 200:
