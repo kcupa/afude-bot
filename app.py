@@ -11,19 +11,11 @@ openai.api_key = os.getenv("OPENAI_API_KEY")
 # Verificación de Webhook
 VERIFY_TOKEN = "afudeteam1324"
 
-@app.route('/webhook', methods=['GET'])
-def verify():
-    """ Verifica el token de Facebook """
-    token_sent = request.args.get("hub.verify_token")
-    challenge = request.args.get("hub.challenge")
-    if token_sent == VERIFY_TOKEN:
-        return challenge
-    return "Invalid verification token", 403
-
 @app.route('/webhook', methods=['POST'])
 def webhook():
     """ Manejo de mensajes entrantes """
     data = request.get_json()
+    print(f"Received data: {data}")  # Esto te ayudará a ver qué datos estás recibiendo.
     
     for entry in data.get("entry", []):
         for message_event in entry.get("messaging", []):
@@ -31,16 +23,17 @@ def webhook():
             
             if "message" in message_event:
                 user_message = message_event["message"]["text"]
-                print(f"User message: {user_message}")  # Log del mensaje del usuario
+                print(f"User message: {user_message}")  # Imprime el mensaje del usuario
                 
                 # Generar respuesta con OpenAI GPT-4
                 bot_response = get_ai_response(user_message)
-                print(f"Bot response: {bot_response}")  # Log de la respuesta del bot
+                print(f"Bot response: {bot_response}")  # Imprime la respuesta del bot
 
                 # Enviar la respuesta al usuario
                 send_message(sender_id, bot_response)
 
     return "Message processed", 200
+
 
 def get_ai_response(user_message):
     """ Genera una respuesta usando OpenAI GPT-4 """
