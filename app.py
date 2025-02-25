@@ -5,7 +5,7 @@ app = Flask(__name__)
 
 # Token de verificación para el webhook
 VERIFY_TOKEN = 'afudeteam1324'  # Cambia esto por tu token de verificación
-ACCESS_TOKEN = 'TU_TOKEN_DE_ACCESO'  # Reemplaza esto con tu token de acceso de Facebook
+ACCESS_TOKEN = 'EAANlJsKDZCwYBO5TMDAwVoyZCH8FZCsdnBBHq0B51gkPc000ZADSlSTE6Qoq5SZA3nCOVH2RJXSxr4OksChw4ZCcmHwD7rs9ZCizuM2ian84FDflhxRBgZCTBuveWmHdcYkJ3AByZAZBMRLYdE7ef6DGXv36el1tioUcjVsxApjGoajqOOkFpvaU5HreljzGkc90Ut1nBkldzTK5EQXPCzlOsH6FrdGuhw09AZD'  # Reemplaza esto con tu token de acceso de Facebook
 
 @app.route("/webhook", methods=["GET", "POST"])
 def webhook():
@@ -40,7 +40,7 @@ def respond_to_message(sender_id, message_text):
 def generate_response(message_text):
     # Aquí puedes implementar lógica para personalizar la respuesta
     # Por ahora, devolveremos una respuesta genérica
-    return "Gracias por tu mensaje. Aquí está la información que necesitaras."
+    return "Gracias por tu mensaje. Aquí está la información que necesitas."
 
 def send_message(sender_id, response_text):
     # Envía un mensaje de vuelta al usuario
