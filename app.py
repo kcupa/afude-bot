@@ -24,19 +24,22 @@ def verify():
 def webhook():
     """ Manejo de mensajes entrantes """
     data = request.get_json()
-    
-    for entry in data.get("entry", []):
-        for message_event in entry.get("messaging", []):
-            sender_id = message_event["sender"]["id"]
-            
-            if "message" in message_event:
-                user_message = message_event["message"]["text"]
-                
-                # Generar respuesta con OpenAI GPT-4
-                bot_response = get_ai_response(user_message)
 
-                # Enviar la respuesta al usuario
-                send_message(sender_id, bot_response)
+    if data and "entry" in data:
+        for entry in data["entry"]:
+            for message_event in entry.get("messaging", []):
+                sender_id = message_event["sender"]["id"]
+
+                if "message" in message_event:
+                    message = message_event["message"]
+                    if "text" in message:
+                        user_message = message["text"]
+
+                        # Generar respuesta con OpenAI GPT-4
+                        bot_response = get_ai_response(user_message)
+
+                        # Enviar la respuesta al usuario
+                        send_message(sender_id, bot_response)
 
     return "Message processed", 200
 
@@ -45,11 +48,14 @@ def get_ai_response(user_message):
     try:
         response = openai.ChatCompletion.create(
             model="gpt-4",
-            messages=[{"role": "system", "content": "Eres un asistente amigable de Afudé."},
-                      {"role": "user", "content": user_message}]
+            messages=[
+                {"role": "system", "content": "Eres un asistente amigable de Afudé, una empresa de insumos para tatuadores."},
+                {"role": "user", "content": user_message}
+            ]
         )
         return response["choices"][0]["message"]["content"].strip()
     except Exception as e:
+        print(f"Error en get_ai_response: {e}")
         return "Lo siento, hubo un problema con mi respuesta. Inténtalo de nuevo."
 
 def send_message(recipient_id, message_text):
@@ -61,7 +67,10 @@ def send_message(recipient_id, message_text):
         "recipient": {"id": recipient_id},
         "message": {"text": message_text}
     }
-    requests.post(url, headers=headers, json=data)
+
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code != 200:
+        print(f"Error al enviar mensaje: {response.text}")
 
 if __name__ == "__main__":
     app.run(host="0.0.0.0", port=5000, debug=True)
