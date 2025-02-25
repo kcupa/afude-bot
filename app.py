@@ -1,66 +1,53 @@
 import os
 import requests
 from flask import Flask, request, jsonify
-import openai
 
 app = Flask(__name__)
 
-# Configurar la clave de API de OpenAI desde las variables de entorno
-openai.api_key = os.getenv("OPENAI_API_KEY")
+VERIFY_TOKEN = "afudeteam1324"  # El token que configuraste en Meta
+PAGE_ACCESS_TOKEN = "TU_TOKEN_DE_PAGINA"
 
-# Verificación de Webhook
-VERIFY_TOKEN = "afudeteam1324"
+@app.route('/', methods=['GET'])
+def home():
+    return "El bot está funcionando."
+
+@app.route('/webhook', methods=['GET'])
+def verify_webhook():
+    """Verifica el webhook con Facebook."""
+    token = request.args.get("hub.verify_token")
+    challenge = request.args.get("hub.challenge")
+
+    if token == VERIFY_TOKEN:
+        return challenge
+    return "Token de verificación incorrecto", 403
 
 @app.route('/webhook', methods=['POST'])
-def webhook():
-    """ Manejo de mensajes entrantes """
+def handle_message():
+    """Recibe mensajes de Messenger y envía una respuesta."""
     data = request.get_json()
-    print(f"Received data: {data}")  # Esto te ayudará a ver qué datos estás recibiendo.
-    
-    for entry in data.get("entry", []):
-        for message_event in entry.get("messaging", []):
-            sender_id = message_event["sender"]["id"]
-            
-            if "message" in message_event:
-                user_message = message_event["message"]["text"]
-                print(f"User message: {user_message}")  # Imprime el mensaje del usuario
-                
-                # Generar respuesta con OpenAI GPT-4
-                bot_response = get_ai_response(user_message)
-                print(f"Bot response: {bot_response}")  # Imprime la respuesta del bot
 
-                # Enviar la respuesta al usuario
-                send_message(sender_id, bot_response)
+    if data.get("object") == "page":
+        for entry in data["entry"]:
+            for messaging_event in entry["messaging"]:
+                if "message" in messaging_event:
+                    sender_id = messaging_event["sender"]["id"]
+                    message_text = messaging_event["message"]["text"]
 
-    return "Message processed", 200
+                    send_message(sender_id, f"Recibí tu mensaje: {message_text}")
 
+    return "EVENT_RECEIVED", 200
 
-def get_ai_response(user_message):
-    """ Genera una respuesta usando OpenAI GPT-4 """
-    try:
-        response = openai.ChatCompletion.create(
-            model="gpt-4",
-            messages=[{"role": "system", "content": "Eres un asistente amigable de Afudé."},
-                      {"role": "user", "content": user_message}]
-        )
-        return response["choices"][0]["message"]["content"].strip()
-    except Exception as e:
-        print(f"Error in getting AI response: {e}")  # Log de error
-        return "Lo siento, hubo un problema con mi respuesta. Inténtalo de nuevo."
-
-def send_message(recipient_id, message_text):
-    """ Envía un mensaje al usuario a través de la API de Facebook """
-    access_token = os.getenv("PAGE_ACCESS_TOKEN")
-    url = f"https://graph.facebook.com/v12.0/me/messages?access_token={access_token}"
+def send_message(recipient_id, text):
+    """Envía un mensaje de vuelta al usuario."""
+    url = f"https://graph.facebook.com/v12.0/me/messages?access_token={PAGE_ACCESS_TOKEN}"
     headers = {"Content-Type": "application/json"}
-    data = {
+    payload = {
         "recipient": {"id": recipient_id},
-        "message": {"text": message_text}
+        "message": {"text": text}
     }
-    
-    response = requests.post(url, headers=headers, json=data)
-    print(f"Sending message to {recipient_id}: {message_text}")  # Log de envío de mensaje
-    print(f"Response from Facebook: {response.status_code}, {response.json()}")  # Log de respuesta de Facebook
 
-if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=int(os.getenv("PORT", 10000)), debug=True)
+    response = requests.post(url, headers=headers, json=payload)
+    return response.json()
+
+if __name__ == '__main__':
+    app.run(host="0.0.0.0", port=5000, debug=True)
