@@ -22,16 +22,19 @@ def verify_webhook():
 
 @app.route("/webhook", methods=["POST"])
 def webhook():
-    """
-    Maneja los mensajes entrantes.
-    """
+    print("Solicitud POST recibida en /webhook")  # Confirma que la solicitud llega
     data = request.get_json()
-    print("Datos recibidos:", data)  # Agrega esta línea para depurar
+    print("Datos recibidos:", data)  # Imprime el JSON recibido
     if data["object"] == "page":
+        print("El objeto es 'page'")  # Confirma que el objeto es 'page'
         for entry in data["entry"]:
+            print("Procesando entrada:", entry)  # Imprime cada entrada
             for messaging_event in entry["messaging"]:
+                print("Procesando evento de mensajería:", messaging_event)  # Imprime cada evento
                 sender_psid = messaging_event["sender"]["id"]
+                print("Sender PSID:", sender_psid)  # Imprime el ID del remitente
                 if messaging_event.get("message"):
+                    print("Mensaje recibido:", messaging_event["message"])  # Imprime el mensaje
                     handle_message(sender_psid, messaging_event["message"])
     return "ok", 200
 
