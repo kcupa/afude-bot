@@ -8,7 +8,7 @@ app = Flask(__name__)
 VERIFY_TOKEN = "AfudeTeam1234"
 
 # Token de acceso de la página (debes obtenerlo desde Facebook Developer)
-PAGE_ACCESS_TOKEN = os.getenv("EAANlJsKDZCwYBO6mpkMXMu4jXYXCMOvim9xRFygiuEXICJNxI7GZBK9RLNZC0zxiZBwagR6cEjYb1TwmxMH7n5Vb8P5GBeX9lE3exUvZAFJsbtLHQAnpSeJZAI9xcvmUZADP4IYCaakVNEiys5PxWXrpIq74NzbWENi84xcUABnjzizzlKhwNz5lFRGFty5nGrs1aM0IXJLZCCMW3joawZAhzcV6sA65ZAEfh3MQZDZD")
+PAGE_ACCESS_TOKEN = os.getenv("EAANlJsKDZCwYBO1VLcjXVqXAJbm2AcsEKjds5BD5uBvVWZCixZAizRXJnfJZCk0c8OljooQJ0LpdXjDX08wI8fPzMZA3OpXqCNUk7ZBWDPbqeFUOOlLk5LLitvs0zwUWs0JXzzlpDo3qZAbbZCdMJQ41lylpOKMwu5gZC7gYiWxNqp6AbENIMwPWKQf7e7X3VZBXx3y03JnRWdZBbMz8KEZD")
 
 @app.route("/webhook", methods=["GET"])
 def verify_webhook():
@@ -64,7 +64,7 @@ def call_send_api(sender_psid, message):
     response = requests.post(url, json=request_body, headers=headers)
     if response.status_code != 200:
         print(f"No se pudo enviar el mensaje: {response.status_code} - {response.text}")
-
+    
 if __name__ == "__main__":
     port = int(os.getenv("PORT", 5000))  # Usa el puerto de la variable de entorno o 5000 por defecto
-    app.run(host="0.0.0.0", port=port)
+    app.run(host="0.0.0.0", port=port, debug=True)  # Activa el modo de depuración
