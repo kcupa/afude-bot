@@ -26,6 +26,7 @@ def webhook():
     Maneja los mensajes entrantes.
     """
     data = request.get_json()
+    print("Datos recibidos:", data)  # Agrega esta línea para depurar
     if data["object"] == "page":
         for entry in data["entry"]:
             for messaging_event in entry["messaging"]:
