@@ -8,7 +8,7 @@ app = Flask(__name__)
 VERIFY_TOKEN = "AfudeTeam1234"
 
 # Token de acceso de la página (debes obtenerlo desde Facebook Developer)
-PAGE_ACCESS_TOKEN = os.getenv("EAANlJsKDZCwYBO1VLcjXVqXAJbm2AcsEKjds5BD5uBvVWZCixZAizRXJnfJZCk0c8OljooQJ0LpdXjDX08wI8fPzMZA3OpXqCNUk7ZBWDPbqeFUOOlLk5LLitvs0zwUWs0JXzzlpDo3qZAbbZCdMJQ41lylpOKMwu5gZC7gYiWxNqp6AbENIMwPWKQf7e7X3VZBXx3y03JnRWdZBbMz8KEZD")
+PAGE_ACCESS_TOKEN = os.getenv("EAANlJsKDZCwYBOxySMC8Osf43q1iWr7XEB06EOjKzWCYXbCJZBZBPDY8Mig7xedDAPAk8ZBUkB9dF7d9MUUAF4BG42rEjJPZB8Co8vZC2KzFK77UHxOzwrGMqpbbx4LZBRIKw8DrcDXoaB0cKkdAyNIMXFZC5sASueqZA1p5IZBWclcjl1F21ZC4Y9UbmYzooMoZCGaFxngB8BdENTigZBYAZD")
 
 @app.route("/webhook", methods=["GET"])
 def verify_webhook():
@@ -25,6 +25,11 @@ def webhook():
     print("Solicitud POST recibida en /webhook")  # Confirma que la solicitud llega
     data = request.get_json()
     print("Datos recibidos:", data)  # Imprime el JSON recibido
+    if data["object"] == "page":
+        for entry in data["entry"]:
+            for messaging_event in entry["messaging"]:
+                sender_psid = messaging_event["sender"]["id"]
+                call_send_api(sender_psid, "Hola, soy un bot")
     return "ok", 200
 
 def handle_message(sender_psid, received_message):
